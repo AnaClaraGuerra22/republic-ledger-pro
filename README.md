@@ -1,8 +1,22 @@
 # Fechamento da República 🏠✨
 
-Aplicação web moderna, responsiva e minimalista desenvolvida para automatizar e simplificar a divisão financeira mensal de despesas em uma república.
+Aplicação web desenvolvida para automatizar e simplificar a divisão financeira mensal de despesas em uma república.
 
 ---
+
+### 🎯 Motivação do Projeto
+
+O projeto nasceu para resolver um problema recorrente na gestão da casa: a falta de automação e suporte por parte da **imobiliária**. 
+
+Frequentemente, o prédio realiza manutenções ou reparos que são de responsabilidade do dono do imóvel (**despesas do proprietário**). Como a imobiliária não aplica esses abatimentos de forma automática no boleto do aluguel, o processo de fechamento exigia cálculos manuais para descontar o valor correto da imobiliária e recalcular a divisão justa do aluguel restante entre as moradoras.
+
+O **Fechamento da República** automatiza essa matemática:
+* **Abatimento Automático:** Subtrai as despesas do proprietário do valor repassado à imobiliária.
+* **Rateio Sem Erros:** Ajusta a base de cálculo individual considerando o desconto já aplicado.
+* **Transparência:** Gera um extrato claro para conferência antes do pagamento.
+
+---
+
 
 ## 🚀 Funcionalidades Principais
 
