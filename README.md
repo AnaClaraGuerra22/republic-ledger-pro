@@ -2,6 +2,8 @@
 
 Aplicação web desenvolvida para automatizar e simplificar a divisão financeira mensal de despesas em uma república.
 
+**Disponível** em: *https://republic-ledger-pro.lovable.app*
+
 ---
 
 ### 🎯 Motivação do Projeto
