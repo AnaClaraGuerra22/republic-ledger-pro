@@ -137,8 +137,10 @@ export type Database = {
       moradoras: {
         Row: {
           ajuste_centavos: number
+          ajuste_pendente_centavos: number | null
           ativo: boolean
           created_at: string
+          fechamentos_ate_aplicar: number | null
           id: string
           nome: string
           ordem: number
@@ -147,8 +149,10 @@ export type Database = {
         }
         Insert: {
           ajuste_centavos?: number
+          ajuste_pendente_centavos?: number | null
           ativo?: boolean
           created_at?: string
+          fechamentos_ate_aplicar?: number | null
           id?: string
           nome: string
           ordem?: number
@@ -157,8 +161,10 @@ export type Database = {
         }
         Update: {
           ajuste_centavos?: number
+          ajuste_pendente_centavos?: number | null
           ativo?: boolean
           created_at?: string
+          fechamentos_ate_aplicar?: number | null
           id?: string
           nome?: string
           ordem?: number
