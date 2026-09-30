@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { calcularFechamento, type MoradoraCalculo } from "./calculo";
+import {
+  ajusteEfetivo,
+  calcularFechamento,
+  comAjustesEfetivos,
+  type MoradoraCalculo,
+} from "./calculo";
 
 const moradoras: MoradoraCalculo[] = [
   { id: "1", nome: "Ana", telefone: "1", tipo_quarto: "Suíte", ajuste_centavos: 5000 },
@@ -45,5 +50,40 @@ describe("calcularFechamento", () => {
     expect(r.pagamentos[0]!.valor_pago_centavos - base).toBeGreaterThanOrEqual(5000);
     expect(r.pagamentos[1]!.valor_pago_centavos - base).toBeGreaterThanOrEqual(3000);
     expect(r.pagamentos[4]!.valor_pago_centavos - base).toBeGreaterThanOrEqual(1000);
+  });
+});
+
+describe("ajustes agendados", () => {
+  const ana = {
+    ajuste_centavos: 4000,
+    ajuste_pendente_centavos: 6000,
+    fechamentos_ate_aplicar: 2,
+  };
+  const semAgendamento = {
+    ajuste_centavos: 3000,
+    ajuste_pendente_centavos: null,
+    fechamentos_ate_aplicar: null,
+  };
+
+  it("mantém o valor atual enquanto faltar mais de 1 fechamento", () => {
+    expect(ajusteEfetivo(ana)).toBe(4000);
+  });
+
+  it("aplica o valor pendente quando falta 1 fechamento ou menos", () => {
+    expect(ajusteEfetivo({ ...ana, fechamentos_ate_aplicar: 1 })).toBe(6000);
+    expect(ajusteEfetivo({ ...ana, fechamentos_ate_aplicar: 0 })).toBe(6000);
+  });
+
+  it("usa o ajuste atual quando não há agendamento", () => {
+    expect(ajusteEfetivo(semAgendamento)).toBe(3000);
+  });
+
+  it("comAjustesEfetivos altera apenas quem tem agendamento vencendo", () => {
+    const efetivas = comAjustesEfetivos([
+      { id: "1", ...ana },
+      { id: "2", ...semAgendamento },
+    ]);
+    expect(efetivas[0]!.ajuste_centavos).toBe(4000);
+    expect(efetivas[1]!.ajuste_centavos).toBe(3000);
   });
 });

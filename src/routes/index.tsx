@@ -1,11 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { CampoMoeda, centavosDoCampo } from "@/components/CampoMoeda";
 import { ResultadoFechamento, type DadosResultado } from "@/components/ResultadoFechamento";
-import { calcularFechamento } from "@/lib/calculo";
+import { calcularFechamento, comAjustesEfetivos } from "@/lib/calculo";
 import { fetchDespesasFixas, fetchMoradoras, salvarFechamento } from "@/lib/db";
 import { formatCentavos, formatMesReferencia } from "@/lib/money";
 
@@ -35,6 +35,7 @@ function mesAtual() {
 
 function NovoFechamento() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [mes, setMes] = useState(mesAtual());
   const [condominio, setCondominio] = useState("");
   const [luz, setLuz] = useState("");
@@ -55,6 +56,11 @@ function NovoFechamento() {
       seguro: map.get("seguro")?.valor_centavos ?? 0,
     };
   }, [fixasQuery.data]);
+
+  const agendadas = useMemo(
+    () => (moradorasQuery.data ?? []).filter((m) => m.fechamentos_ate_aplicar !== null),
+    [moradorasQuery.data],
+  );
 
   const calcular = () => {
     const novosErros: Record<string, string> = {};
@@ -83,7 +89,7 @@ function NovoFechamento() {
       despesasProprietaria: centavosDoCampo(proprietaria),
     };
 
-    const r = calcularFechamento(entrada, moradoras);
+    const r = calcularFechamento(entrada, comAjustesEfetivos(moradoras));
 
     if (r.totalGeral <= 0) {
       toast.error("O total geral ficou zerado ou negativo. Confira os valores informados.");
@@ -109,6 +115,7 @@ function NovoFechamento() {
   const salvar = async () => {
     if (!resultado) return;
     const moradoras = moradorasQuery.data ?? [];
+    const efetivas = comAjustesEfetivos(moradoras);
     const ok = window.confirm(
       `Salvar o fechamento de ${resultado.mesLabel} no valor total de ${formatCentavos(resultado.totalGeral)}?`,
     );
@@ -131,11 +138,12 @@ function NovoFechamento() {
           nome: p.nome,
           telefone: p.telefone,
           tipo_quarto: p.tipo_quarto,
-          ajuste_centavos: moradoras[i]?.ajuste_centavos ?? 0,
+          ajuste_centavos: efetivas[i]?.ajuste_centavos ?? 0,
           valor_pago_centavos: p.valor_pago_centavos,
         })),
       });
       setSalvo(true);
+      queryClient.invalidateQueries({ queryKey: ["moradoras"] });
       toast.success("Fechamento salvo no histórico.");
     } catch (e) {
       console.error(e);
@@ -178,6 +186,23 @@ function NovoFechamento() {
           <ItemFixo rotulo="Seguro" valor={fixas.seguro} />
         </dl>
       </section>
+
+      {agendadas.length > 0 ? (
+        <section className="panel p-6 sm:p-8">
+          <p className="eyebrow">Ajuste agendado</p>
+          <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
+            {agendadas.map((m) => (
+              <li key={m.id}>
+                {m.tipo_quarto} ({m.nome}): {formatCentavos(m.ajuste_centavos)} →{" "}
+                {formatCentavos(m.ajuste_pendente_centavos ?? m.ajuste_centavos)}{" "}
+                {m.fechamentos_ate_aplicar !== null && m.fechamentos_ate_aplicar > 1
+                  ? `no ${m.fechamentos_ate_aplicar}º fechamento a partir de agora`
+                  : "já no próximo fechamento"}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="panel p-6 sm:p-8">
         <p className="eyebrow">Despesas do mês</p>

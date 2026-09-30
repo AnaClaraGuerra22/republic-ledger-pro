@@ -7,6 +7,8 @@ export interface Moradora {
   telefone: string;
   tipo_quarto: string;
   ajuste_centavos: number;
+  ajuste_pendente_centavos: number | null;
+  fechamentos_ate_aplicar: number | null;
   ativo: boolean;
   ordem: number;
 }
@@ -129,5 +131,43 @@ export async function salvarFechamento(params: {
   );
   if (e2) throw e2;
 
+  await aplicarAgendamentosAjustes();
+
   return fechamentoId;
+}
+
+// Aplica os ajustes de quarto agendados: cada fechamento salvo decrementa o
+// contador; ao chegar a zero, o valor pendente passa a ser o ajuste oficial.
+async function aplicarAgendamentosAjustes(): Promise<void> {
+  const { data, error } = await supabase
+    .from("moradoras")
+    .select("id, ajuste_centavos, ajuste_pendente_centavos, fechamentos_ate_aplicar")
+    .not("fechamentos_ate_aplicar", "is", null);
+  if (error) throw error;
+
+  for (const m of (data ?? []) as {
+    id: string;
+    ajuste_centavos: number;
+    ajuste_pendente_centavos: number | null;
+    fechamentos_ate_aplicar: number;
+  }[]) {
+    const restantes = m.fechamentos_ate_aplicar - 1;
+    if (restantes <= 0) {
+      const { error: eUpd } = await supabase
+        .from("moradoras")
+        .update({
+          ajuste_centavos: m.ajuste_pendente_centavos ?? m.ajuste_centavos,
+          ajuste_pendente_centavos: null,
+          fechamentos_ate_aplicar: null,
+        })
+        .eq("id", m.id);
+      if (eUpd) throw eUpd;
+    } else {
+      const { error: eUpd } = await supabase
+        .from("moradoras")
+        .update({ fechamentos_ate_aplicar: restantes })
+        .eq("id", m.id);
+      if (eUpd) throw eUpd;
+    }
+  }
 }

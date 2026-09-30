@@ -71,3 +71,22 @@ export function calcularFechamento(
     confere: somaPagamentos === totalGeral,
   };
 }
+
+export interface MoradoraComAgendamento {
+  ajuste_centavos: number;
+  ajuste_pendente_centavos: number | null;
+  fechamentos_ate_aplicar: number | null;
+}
+
+// Ajuste que vale no fechamento sendo calculado: quando falta no máximo 1
+// fechamento para o agendamento vencer, o valor pendente já entra em vigor.
+export function ajusteEfetivo(m: MoradoraComAgendamento): number {
+  if (m.fechamentos_ate_aplicar !== null && m.fechamentos_ate_aplicar <= 1) {
+    return m.ajuste_pendente_centavos ?? m.ajuste_centavos;
+  }
+  return m.ajuste_centavos;
+}
+
+export function comAjustesEfetivos<T extends MoradoraComAgendamento>(moradoras: T[]): T[] {
+  return moradoras.map((m) => ({ ...m, ajuste_centavos: ajusteEfetivo(m) }));
+}
