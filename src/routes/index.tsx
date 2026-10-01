@@ -116,10 +116,6 @@ function NovoFechamento() {
     if (!resultado) return;
     const moradoras = moradorasQuery.data ?? [];
     const efetivas = comAjustesEfetivos(moradoras);
-    const ok = window.confirm(
-      `Salvar o fechamento de ${resultado.mesLabel} no valor total de ${formatCentavos(resultado.totalGeral)}?`,
-    );
-    if (!ok) return;
 
     setSalvando(true);
     try {
