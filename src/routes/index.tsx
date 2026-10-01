@@ -329,7 +329,7 @@ function ItemFixo({ chave, rotulo, valor }: { chave: string; rotulo: string; val
             type="button"
             aria-label={`Editar ${rotulo}`}
             onClick={() => {
-              setTexto(formatCentavos(valor).replace(/^R\$\s?/, ""));
+              setTexto(maskCurrency(String(valor)));
               setEditando((v) => !v);
             }}
             className="rounded-sm p-1 text-muted-foreground transition-colors hover:text-primary"

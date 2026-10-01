@@ -179,7 +179,7 @@ export async function atualizarDespesaFixa(chave: string, valor_centavos: number
 
 export async function atualizarMoradora(
   id: string,
-  dados: { nome: string; telefone: string; tipo_quarto: string },
+  dados: { nome: string; telefone: string },
 ): Promise<void> {
   const { error } = await supabase.from("moradoras").update(dados).eq("id", id);
   if (error) throw error;
