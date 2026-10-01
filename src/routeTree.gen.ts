@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MoradorasRouteImport } from './routes/moradoras'
 import { Route as HistoricoIndexRouteImport } from './routes/historico.index'
 import { Route as HistoricoIdRouteImport } from './routes/historico.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoradorasRoute = MoradorasRouteImport.update({
+  id: '/moradoras',
+  path: '/moradoras',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoricoIndexRoute = HistoricoIndexRouteImport.update({
@@ -31,30 +37,34 @@ const HistoricoIdRoute = HistoricoIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/moradoras': typeof MoradorasRoute
   '/historico/$id': typeof HistoricoIdRoute
   '/historico/': typeof HistoricoIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/moradoras': typeof MoradorasRoute
   '/historico/$id': typeof HistoricoIdRoute
   '/historico': typeof HistoricoIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/moradoras': typeof MoradorasRoute
   '/historico/$id': typeof HistoricoIdRoute
   '/historico/': typeof HistoricoIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/historico/$id' | '/historico/'
+  fullPaths: '/' | '/moradoras' | '/historico/$id' | '/historico/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/historico/$id' | '/historico'
-  id: '__root__' | '/' | '/historico/$id' | '/historico/'
+  to: '/' | '/moradoras' | '/historico/$id' | '/historico'
+  id: '__root__' | '/' | '/moradoras' | '/historico/$id' | '/historico/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MoradorasRoute: typeof MoradorasRoute
   HistoricoIdRoute: typeof HistoricoIdRoute
   HistoricoIndexRoute: typeof HistoricoIndexRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/moradoras': {
+      id: '/moradoras'
+      path: '/moradoras'
+      fullPath: '/moradoras'
+      preLoaderRoute: typeof MoradorasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/historico/': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MoradorasRoute: MoradorasRoute,
   HistoricoIdRoute: HistoricoIdRoute,
   HistoricoIndexRoute: HistoricoIndexRoute,
 }
