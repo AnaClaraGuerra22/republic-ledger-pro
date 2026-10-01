@@ -39,7 +39,7 @@ function NovoFechamento() {
   const [mes, setMes] = useState(mesAtual());
   const [condominio, setCondominio] = useState("");
   const [luz, setLuz] = useState("");
-  const [proprietaria, setProprietaria] = useState("");
+  const [proprietarias, setProprietarias] = useState<string[]>([""]);
   const [erros, setErros] = useState<Record<string, string>>({});
   const [resultado, setResultado] = useState<DadosResultado | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -86,7 +86,7 @@ function NovoFechamento() {
       seguro: fixas.seguro,
       condominio: centavosDoCampo(condominio),
       luz: centavosDoCampo(luz),
-      despesasProprietaria: centavosDoCampo(proprietaria),
+      despesasProprietaria: proprietarias.reduce((t, v) => t + centavosDoCampo(v), 0),
     };
 
     const r = calcularFechamento(entrada, comAjustesEfetivos(moradoras));
@@ -221,13 +221,43 @@ function NovoFechamento() {
             onChange={setLuz}
             erro={erros["luz"]}
           />
-          <CampoMoeda
-            id="proprietaria"
-            label="Despesas da proprietária"
-            valor={proprietaria}
-            onChange={setProprietaria}
-            erro={erros["proprietaria"]}
-          />
+          <div className="space-y-2">
+            {proprietarias.map((v, i) => (
+              <div key={i} className="flex items-end gap-2">
+                <div className="flex-1">
+                  <CampoMoeda
+                    id={`proprietaria-${i}`}
+                    label={i === 0 ? "Despesas da proprietária" : `Despesa ${i + 1}`}
+                    valor={v}
+                    onChange={(t) => setProprietarias((a) => a.map((x, j) => (j === i ? t : x)))}
+                    erro={i === 0 ? erros["proprietaria"] : undefined}
+                  />
+                </div>
+                {proprietarias.length > 1 ? (
+                  <button
+                    type="button"
+                    aria-label={`Remover despesa ${i + 1}`}
+                    onClick={() => setProprietarias((a) => a.filter((_, j) => j !== i))}
+                    className="h-12 w-10 rounded-sm border border-input text-muted-foreground hover:text-destructive"
+                  >
+                    ×
+                  </button>
+                ) : null}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setProprietarias((a) => [...a, ""])}
+              className="w-full rounded-sm border border-dashed border-primary/50 py-2 text-sm text-primary hover:bg-primary/5"
+            >
+              + Adicionar despesa
+            </button>
+            {proprietarias.length > 1 ? (
+              <p className="text-right text-sm text-muted-foreground">
+                Total: <span className="font-medium text-foreground tabular-nums">{formatCentavos(proprietarias.reduce((t, x) => t + centavosDoCampo(x), 0))}</span>
+              </p>
+            ) : null}
+          </div>
         </div>
       </section>
 
