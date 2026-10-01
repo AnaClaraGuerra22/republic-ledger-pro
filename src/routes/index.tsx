@@ -6,8 +6,9 @@ import { toast } from "sonner";
 import { CampoMoeda, centavosDoCampo } from "@/components/CampoMoeda";
 import { ResultadoFechamento, type DadosResultado } from "@/components/ResultadoFechamento";
 import { calcularFechamento, comAjustesEfetivos } from "@/lib/calculo";
-import { fetchDespesasFixas, fetchMoradoras, salvarFechamento } from "@/lib/db";
-import { formatCentavos, formatMesReferencia } from "@/lib/money";
+import { atualizarDespesaFixa, fetchDespesasFixas, fetchMoradoras, salvarFechamento } from "@/lib/db";
+import { formatCentavos, formatMesReferencia, maskCurrency, parseToCentavos } from "@/lib/money";
+import { Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -177,9 +178,9 @@ function NovoFechamento() {
       <section className="panel p-6 sm:p-8">
         <p className="eyebrow">Despesas fixas</p>
         <dl className="mt-4 divide-y divide-border text-sm">
-          <ItemFixo rotulo="Aluguel" valor={fixas.aluguel} />
-          <ItemFixo rotulo="Internet" valor={fixas.internet} />
-          <ItemFixo rotulo="Seguro" valor={fixas.seguro} />
+          <ItemFixo chave="aluguel" rotulo="Aluguel" valor={fixas.aluguel} />
+          <ItemFixo chave="internet" rotulo="Internet" valor={fixas.internet} />
+          <ItemFixo chave="seguro" rotulo="Seguro" valor={fixas.seguro} />
         </dl>
       </section>
 
@@ -296,11 +297,74 @@ function NovoFechamento() {
   );
 }
 
-function ItemFixo({ rotulo, valor }: { rotulo: string; valor: number }) {
+function ItemFixo({ chave, rotulo, valor }: { chave: string; rotulo: string; valor: number }) {
+  const queryClient = useQueryClient();
+  const [editando, setEditando] = useState(false);
+  const [texto, setTexto] = useState("");
+  const [salvandoFixo, setSalvandoFixo] = useState(false);
+  const novo = parseToCentavos(texto);
+
+  const salvarFixo = async () => {
+    setSalvandoFixo(true);
+    try {
+      await atualizarDespesaFixa(chave, novo);
+      await queryClient.invalidateQueries({ queryKey: ["despesas-fixas"] });
+      toast.success(`${rotulo} atualizado para ${formatCentavos(novo)}.`);
+      setEditando(false);
+    } catch (e) {
+      console.error(e);
+      toast.error("Não foi possível salvar o novo valor.");
+    } finally {
+      setSalvandoFixo(false);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-between gap-4 py-3">
-      <dt className="text-muted-foreground">{rotulo}</dt>
-      <dd className="tabular-nums">{formatCentavos(valor)}</dd>
+    <div className="py-3">
+      <div className="flex items-center justify-between gap-4">
+        <dt className="text-muted-foreground">{rotulo}</dt>
+        <dd className="flex items-center gap-2 tabular-nums">
+          {formatCentavos(valor)}
+          <button
+            type="button"
+            aria-label={`Editar ${rotulo}`}
+            onClick={() => {
+              setTexto(maskCurrency(String(valor)));
+              setEditando((v) => !v);
+            }}
+            className="rounded-sm p-1 text-muted-foreground transition-colors hover:text-primary"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        </dd>
+      </div>
+      {editando ? (
+        <div className="mt-3 space-y-3 rounded-sm border border-border bg-background p-3">
+          <input
+            aria-label={`Novo valor de ${rotulo}`}
+            inputMode="numeric"
+            value={texto}
+            onChange={(e) => setTexto(maskCurrency(e.target.value))}
+            className="h-10 w-full rounded-sm border border-input bg-card px-3 text-right tabular-nums outline-none focus:border-primary"
+          />
+          <p className="text-xs text-muted-foreground">
+            Deseja salvar {formatCentavos(novo)} como o novo valor padrão de {rotulo.toLowerCase()}?
+          </p>
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={() => setEditando(false)} className="rounded-sm px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              disabled={salvandoFixo || novo <= 0}
+              onClick={salvarFixo}
+              className="rounded-sm bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+            >
+              {salvandoFixo ? "Salvando..." : "Sim, salvar"}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

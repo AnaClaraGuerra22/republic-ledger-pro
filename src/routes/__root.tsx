@@ -114,6 +114,7 @@ function RootComponent() {
           <nav className="mx-auto flex max-w-5xl items-center gap-1 px-4 py-3 sm:px-6">
             <NavLink to="/">Novo Fechamento</NavLink>
             <NavLink to="/historico">Histórico</NavLink>
+            <NavLink to="/moradoras">Moradoras</NavLink>
           </nav>
         </header>
         <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">

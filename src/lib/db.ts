@@ -171,3 +171,16 @@ async function aplicarAgendamentosAjustes(): Promise<void> {
     }
   }
 }
+
+export async function atualizarDespesaFixa(chave: string, valor_centavos: number): Promise<void> {
+  const { error } = await supabase.from("despesas_fixas").update({ valor_centavos }).eq("chave", chave);
+  if (error) throw error;
+}
+
+export async function atualizarMoradora(
+  id: string,
+  dados: { nome: string; telefone: string },
+): Promise<void> {
+  const { error } = await supabase.from("moradoras").update(dados).eq("id", id);
+  if (error) throw error;
+}
