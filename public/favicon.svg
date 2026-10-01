@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Casa">
+  <rect width="64" height="64" rx="14" fill="#f4f1ea"/>
+  <path d="M32 11.5 54.4 30.6c1.2 1 .5 2.9-1.1 2.9H10.7c-1.6 0-2.3-1.9-1.1-2.9Z" fill="#8b735b"/>
+  <path d="M16 33.5h32V48a4 4 0 0 1-4 4H20a4 4 0 0 1-4-4Z" fill="#8b735b"/>
+  <path d="M27 52V41a5 5 0 0 1 10 0v11Z" fill="#f4f1ea"/>
+</svg>
